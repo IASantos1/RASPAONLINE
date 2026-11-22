@@ -25,7 +25,7 @@ const STATIC_TYPES: Record<string, string> = {
 };
 
 async function serveStatic(path: string, res: ServerResponse): Promise<boolean> {
-  const relative = path === "/" ? "index.html" : decodeURIComponent(path).replace(/^\\/+/, "");
+  const relative = path === "/" ? "index.html" : decodeURIComponent(path.startsWith("/") ? path.slice(1) : path);
   const filePath = resolve(PUBLIC_DIR, relative);
   if (!filePath.startsWith(PUBLIC_DIR + sep) && filePath !== resolve(PUBLIC_DIR, "index.html")) {
     return false;
