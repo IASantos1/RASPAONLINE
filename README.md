@@ -23,7 +23,12 @@ Requer Node.js 20 ou superior.
 npm install
 npm test
 npm run typecheck
+npm run build
 ```
+
+## API DEMO com PostgreSQL
+
+A API de emissões e revelação de bilhetes está documentada em [docs/API.md](docs/API.md). Configura a base de dados com [db/schema.sql](db/schema.sql) e usa `.env.example` como referência.
 
 ## Limites importantes
 
