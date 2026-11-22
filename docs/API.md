@@ -42,3 +42,41 @@ curl -X POST http://localhost:3000/api/demo/tickets/ISSUE_ID-0001/reveal
 - O hash deteta alterações aos dados, mas não prova por si só a imparcialidade da emissão.
 - Antes de uso público, acrescentar autenticação de utilizador, autorização por bilhete, rate limiting, registos de auditoria append-only, backups, monitorização e revisão de segurança.
 - A versão é DEMO e não deve aceitar depósitos nem emitir prémios resgatáveis.
+
+
+## Carteira DEMO
+
+- `POST /api/demo/wallet/accounts` — cria uma conta demo e devolve um token de sessão. O token é apresentado apenas uma vez.
+- `GET /api/demo/wallet` — consulta saldo e os últimos 50 movimentos. Requer `Authorization: Bearer TOKEN`.
+- `POST /api/demo/wallet/purchase` — compra um bilhete disponível de uma emissão. Requer sessão e JSON `{"issueId":"..." }`.
+- `GET /api/demo/tickets/:ticketId` — consulta o estado de um bilhete pertencente à conta.
+- `POST /api/demo/tickets/:ticketId/reveal` — revela o bilhete da conta e credita o prémio demo uma única vez.
+
+### Criar conta e consultar saldo
+
+```bash
+curl -X POST http://localhost:3000/api/demo/wallet/accounts \
+  -H 'content-type: application/json' \
+  -d '{"displayName":"Jogador Demo"}'
+```
+
+Guarda o campo `accessToken` e envia-o nas chamadas autenticadas:
+
+```bash
+curl http://localhost:3000/api/demo/wallet \
+  -H 'Authorization: Bearer TOKEN'
+```
+
+### Comprar e revelar
+
+```bash
+curl -X POST http://localhost:3000/api/demo/wallet/purchase \
+  -H 'Authorization: Bearer TOKEN' \
+  -H 'content-type: application/json' \
+  -d '{"issueId":"ID_DA_EMISSAO"}'
+
+curl -X POST http://localhost:3000/api/demo/tickets/ID_DO_BILHETE/reveal \
+  -H 'Authorization: Bearer TOKEN'
+```
+
+Cada conta começa com €50 fictícios. O saldo só pode ser utilizado nesta demonstração. Compras e créditos de prémios são processados em transações PostgreSQL; o crédito do prémio é idempotente, mesmo que a revelação seja repetida. As vendas e movimentos financeiros ficam registados em tabelas append-only.
