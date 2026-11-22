@@ -1,7 +1,11 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { MODELS, PRICES_EUR, type GameModel } from "./config.js";
-import { pool, persistIssue, listIssues, getIssue, getTicketStatus, revealTicket } from "./db.js";
+import {
+  pool, persistIssue, listIssues, getIssue,
+  createDemoAccount, findDemoUser, getDemoWallet, purchaseDemoTicket,
+  getOwnedDemoTicket, revealOwnedDemoTicket, DemoWalletError
+} from "./db.js";
 import { generateIssue } from "./engine/issue-generator.js";
 
 const PORT = Number(process.env.PORT ?? 3000);
@@ -39,6 +43,38 @@ async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> 
     throw new Error("O corpo deve ser um objeto JSON.");
   }
   return parsed as Record<string, unknown>;
+}
+
+
+function bearerToken(req: IncomingMessage): string | null {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return null;
+  const token = header.slice(7).trim();
+  return /^[a-f0-9]{64}$/.test(token) ? token : null;
+}
+
+async function authenticatedDemoUser(req: IncomingMessage): Promise<string | null> {
+  const token = bearerToken(req);
+  if (!token) return null;
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const user = await findDemoUser(tokenHash);
+  return user?.id ?? null;
+}
+
+function walletError(res: ServerResponse, error: unknown): void {
+  if (error instanceof DemoWalletError) {
+    const status = error.code === "NOT_FOUND" ? 404
+      : error.code === "INSUFFICIENT_FUNDS" || error.code === "SOLD" ? 409 : 403;
+    const messages = {
+      NOT_FOUND: "Conta, carteira ou bilhete não encontrado.",
+      INSUFFICIENT_FUNDS: "Saldo demo insuficiente.",
+      SOLD: "Não existem bilhetes disponíveis nesta emissão.",
+      NOT_OWNER: "Este bilhete não pertence à tua conta."
+    };
+    send(res, status, { error: messages[error.code] });
+    return;
+  }
+  throw error;
 }
 
 function validModel(value: unknown): value is GameModel {
@@ -100,6 +136,46 @@ async function handler(req: IncomingMessage, res: ServerResponse): Promise<void>
     });
   }
 
+
+  if (req.method === "POST" && path === "/api/demo/wallet/accounts") {
+    let body: Record<string, unknown>;
+    try { body = await readJson(req); }
+    catch (error) { return send(res, 400, { error: error instanceof Error ? error.message : "JSON inválido." }); }
+    const displayName = typeof body.displayName === "string" ? body.displayName.trim() : "Jogador Demo";
+    if (!displayName || displayName.length > 40) {
+      return send(res, 400, { error: "O nome deve ter entre 1 e 40 caracteres." });
+    }
+    const token = randomBytes(32).toString("hex");
+    const userId = randomUUID();
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    await createDemoAccount({ userId, displayName, tokenHash });
+    return send(res, 201, {
+      mode: "DEMO", userId, displayName, accessToken: token,
+      initialBalanceCents: 5000,
+      warning: "Guarda este token. Só é mostrado uma vez e dá acesso à carteira demo."
+    });
+  }
+
+  if (req.method === "GET" && path === "/api/demo/wallet") {
+    const userId = await authenticatedDemoUser(req);
+    if (!userId) return send(res, 401, { error: "Sessão demo inválida." });
+    try { return send(res, 200, { mode: "DEMO", ...(await getDemoWallet(userId)) }); }
+    catch (error) { return walletError(res, error); }
+  }
+
+  if (req.method === "POST" && path === "/api/demo/wallet/purchase") {
+    const userId = await authenticatedDemoUser(req);
+    if (!userId) return send(res, 401, { error: "Sessão demo inválida." });
+    let body: Record<string, unknown>;
+    try { body = await readJson(req); }
+    catch (error) { return send(res, 400, { error: error instanceof Error ? error.message : "JSON inválido." }); }
+    if (typeof body.issueId !== "string" || body.issueId.length > 100) {
+      return send(res, 400, { error: "issueId inválido." });
+    }
+    try { return send(res, 201, { mode: "DEMO", ...(await purchaseDemoTicket(userId, body.issueId)) }); }
+    catch (error) { return walletError(res, error); }
+  }
+
   if (req.method === "GET" && path === "/api/demo/issues") {
     const limit = Number(url.searchParams.get("limit") ?? 50);
     return send(res, 200, { issues: await listIssues(Number.isFinite(limit) ? limit : 50) });
@@ -111,28 +187,23 @@ async function handler(req: IncomingMessage, res: ServerResponse): Promise<void>
     return issue ? send(res, 200, issue) : send(res, 404, { error: "Emissão não encontrada." });
   }
 
-  const ticketMatch = path.match(/^\/api\/demo\/tickets\/([^/]+)$/);
-  if (req.method === "GET" && ticketMatch) {
-    const ticket = await getTicketStatus(decodeURIComponent(ticketMatch[1]!));
-    return ticket ? send(res, 200, ticket) : send(res, 404, { error: "Bilhete não encontrado." });
+
+  const revealMatch = path.match(/^\\/api\\/demo\\/tickets\\/([^/]+)\\/reveal$/);
+  if (req.method === "POST" && revealMatch) {
+    const userId = await authenticatedDemoUser(req);
+    if (!userId) return send(res, 401, { error: "Sessão demo inválida." });
+    try {
+      const ticket = await revealOwnedDemoTicket(userId, decodeURIComponent(revealMatch[1]!));
+      return send(res, 200, { mode: "DEMO", ...ticket });
+    } catch (error) { return walletError(res, error); }
   }
 
-  const revealMatch = path.match(/^\/api\/demo\/tickets\/([^/]+)\/reveal$/);
-  if (req.method === "POST" && revealMatch) {
-    const ticket = await revealTicket(decodeURIComponent(revealMatch[1]!));
-    if (!ticket) return send(res, 404, { error: "Bilhete não encontrado." });
-    return send(res, 200, {
-      id: ticket.id,
-      issueId: ticket.issue_id,
-      model: ticket.model,
-      priceCents: Number(ticket.price_cents),
-      grid: ticket.grid,
-      prizeMultiplier: Number(ticket.prize_multiplier),
-      prizeCents: Number(ticket.prize_cents),
-      winningSymbolId: ticket.winning_symbol_id,
-      ticketHash: ticket.ticket_hash,
-      revealedAt: ticket.revealed_at
-    });
+  const ticketMatch = path.match(/^\\/api\\/demo\\/tickets\\/([^/]+)$/);
+  if (req.method === "GET" && ticketMatch) {
+    const userId = await authenticatedDemoUser(req);
+    if (!userId) return send(res, 401, { error: "Sessão demo inválida." });
+    const ticket = await getOwnedDemoTicket(userId, decodeURIComponent(ticketMatch[1]!));
+    return ticket ? send(res, 200, ticket) : send(res, 404, { error: "Bilhete não encontrado." });
   }
 
   return send(res, 404, { error: "Rota não encontrada." });
