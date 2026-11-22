@@ -47,3 +47,52 @@ CREATE INDEX IF NOT EXISTS idx_scratch_issues_created_at
   ON scratch_issues (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_scratch_tickets_issue_batch
   ON scratch_tickets (issue_id, batch_number);
+
+-- Resultados e metadados de emissão são imutáveis após a criação.
+CREATE OR REPLACE FUNCTION raspaonline_reject_mutation()
+RETURNS trigger AS $$
+BEGIN
+  RAISE EXCEPTION 'Registos de emissão são imutáveis.';
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_scratch_issues_immutable ON scratch_issues;
+CREATE TRIGGER trg_scratch_issues_immutable
+BEFORE UPDATE OR DELETE ON scratch_issues
+FOR EACH ROW EXECUTE FUNCTION raspaonline_reject_mutation();
+
+DROP TRIGGER IF EXISTS trg_scratch_batches_immutable ON scratch_batches;
+CREATE TRIGGER trg_scratch_batches_immutable
+BEFORE UPDATE OR DELETE ON scratch_batches
+FOR EACH ROW EXECUTE FUNCTION raspaonline_reject_mutation();
+
+CREATE OR REPLACE FUNCTION raspaonline_protect_ticket_result()
+RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'Bilhetes não podem ser apagados.';
+  END IF;
+
+  IF NEW.id IS DISTINCT FROM OLD.id
+     OR NEW.issue_id IS DISTINCT FROM OLD.issue_id
+     OR NEW.model IS DISTINCT FROM OLD.model
+     OR NEW.price_cents IS DISTINCT FROM OLD.price_cents
+     OR NEW.batch_number IS DISTINCT FROM OLD.batch_number
+     OR NEW.grid IS DISTINCT FROM OLD.grid
+     OR NEW.prize_multiplier IS DISTINCT FROM OLD.prize_multiplier
+     OR NEW.prize_cents IS DISTINCT FROM OLD.prize_cents
+     OR NEW.winning_symbol_id IS DISTINCT FROM OLD.winning_symbol_id
+     OR NEW.ticket_hash IS DISTINCT FROM OLD.ticket_hash
+     OR (OLD.revealed_at IS NOT NULL AND NEW.revealed_at IS DISTINCT FROM OLD.revealed_at) THEN
+    RAISE EXCEPTION 'Resultado do bilhete é imutável.';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_scratch_tickets_immutable ON scratch_tickets;
+CREATE TRIGGER trg_scratch_tickets_immutable
+BEFORE UPDATE OR DELETE ON scratch_tickets
+FOR EACH ROW EXECUTE FUNCTION raspaonline_protect_ticket_result();
+
