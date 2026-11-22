@@ -62,9 +62,10 @@ function chooseFillerSymbols(
   winningSymbolId: string | null
 ): string[] {
   const config = getModelConfig(model);
+  const prizeSymbols = new Set(config.tiers.map((tier) => tier.symbolId));
   const fillerPool = config.symbols
     .map((symbol) => symbol.id)
-    .filter((id) => id !== winningSymbolId);
+    .filter((id) => !prizeSymbols.has(id));
 
   const result: string[] = [];
   const counts = new Map<string, number>();
@@ -103,13 +104,23 @@ function selectTierMap(model: GameModel): Map<number, PrizeTier> {
   return new Map(getModelConfig(model).tiers.map((tier) => [tier.multiplier, tier]));
 }
 
-export function evaluateGrid(grid: string[][]): { multiplier: number; symbolId: string | null } {
+export function evaluateGrid(
+  grid: string[][],
+  model: GameModel
+): { multiplier: number; symbolId: string | null } {
   const counts = new Map<string, number>();
   for (const row of grid) {
     for (const symbolId of row) counts.set(symbolId, (counts.get(symbolId) ?? 0) + 1);
   }
-  const match = [...counts.entries()].find(([, count]) => count >= 3);
-  return match ? { multiplier: 1, symbolId: match[0] } : { multiplier: 0, symbolId: null };
+  const prizeBySymbol = new Map(
+    getModelConfig(model).tiers.map((tier) => [tier.symbolId, tier.multiplier])
+  );
+  const match = [...counts.entries()].find(
+    ([symbolId, count]) => count >= 3 && prizeBySymbol.has(symbolId)
+  );
+  return match
+    ? { multiplier: prizeBySymbol.get(match[0])!, symbolId: match[0] }
+    : { multiplier: 0, symbolId: null };
 }
 
 export function generateIssue(input: {
@@ -145,9 +156,9 @@ export function generateIssue(input: {
       prizeCents: (tier?.multiplier ?? 0) * priceCents,
       winningSymbolId: tier?.symbolId ?? null
     };
-    const evaluated = evaluateGrid(grid);
-    if (evaluated.multiplier !== (tier ? 1 : 0) ||
-        (tier && evaluated.symbolId !== tier.symbolId)) {
+    const evaluated = evaluateGrid(grid, input.model);
+    if (evaluated.multiplier !== (tier?.multiplier ?? 0) ||
+        evaluated.symbolId !== (tier?.symbolId ?? null)) {
       throw new Error("A grelha gerada não corresponde ao resultado atribuído.");
     }
     return { ...ticketWithoutHash, ticketHash: hashTicket(ticketWithoutHash) };
@@ -229,9 +240,11 @@ export function verifyIssue(issue: ScratchIssue): { valid: boolean; errors: stri
   issue.tickets.forEach((ticket, index) => {
     const { ticketHash, ...body } = ticket;
     if (hashTicket(body) !== ticketHash) errors.push(`Hash inválido no bilhete ${index + 1}.`);
-    const evaluated = evaluateGrid(ticket.grid);
-    const expectedMultiplier = ticket.prizeMultiplier > 0 ? 1 : 0;
-    if (evaluated.multiplier !== expectedMultiplier) errors.push(`Regra de símbolos inválida no bilhete ${index + 1}.`);
+    const evaluated = evaluateGrid(ticket.grid, ticket.model);
+    if (evaluated.multiplier !== ticket.prizeMultiplier ||
+        evaluated.symbolId !== ticket.winningSymbolId) {
+      errors.push(`Regra de símbolos inválida no bilhete ${index + 1}.`);
+    }
     if (ticket.prizeCents !== ticket.prizeMultiplier * ticket.priceCents) errors.push(`Prémio incorreto no bilhete ${index + 1}.`);
     computedPrizes += ticket.prizeCents;
   });
