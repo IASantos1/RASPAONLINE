@@ -127,4 +127,3 @@ export async function closeDatabase(): Promise<void> {
   await pool.end();
 }
 
-export type PersistedTicket = ScratchTicket;
