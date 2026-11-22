@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07130f">
+  <meta name="description" content="RaspaOnline — experiência de raspadinhas em modo de demonstração.">
+  <title>RaspaOnline — A magia de raspar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="RaspaOnline início"><span class="brand-mark">R</span><span>raspa<span class="brand-light">online</span><small>O prazer está na surpresa</small></span></a>
+    <nav class="desktop-nav"><a class="active" href="#jogos">Raspadinhas</a><a href="#natal">Especial de Natal</a><a href="#como-funciona">Como funciona</a></nav>
+    <div class="header-actions"><div id="header-wallet" class="header-wallet hidden">€<span id="header-balance">0,00</span></div><button id="login-button" class="button button-quiet">Entrar</button><button id="register-button" class="button button-primary">Criar conta demo</button><button id="logout-button" class="button button-quiet hidden">Sair</button></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> UMA NOVA EXPERIÊNCIA DE JOGO</div>
+        <h1>Pequenos momentos.<br><span>Grandes surpresas.</span></h1>
+        <p>Descobre as nossas raspadinhas digitais. Escolhe a tua favorita, raspa e revela o que está escondido.</p>
+        <div class="hero-actions"><a class="button button-primary button-large" href="#jogos">Explorar raspadinhas <span>↗</span></a><div class="trust-note"><span class="trust-icon">✦</span> Experiência de demonstração</div></div>
+      </div>
+      <div class="hero-art" aria-label="Raspadinha digital ilustrada">
+        <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+        <div class="hero-ticket">
+          <div class="ticket-topline"><span>RASPAONLINE</span><span>EDIÇÃO Nº 001</span></div>
+          <div class="ticket-star">✦</div><div class="ticket-title">A tua<br><b>SORTE</b></div>
+          <div class="ticket-symbols"><span>✧</span><span>♛</span><span>✦</span></div>
+          <div class="ticket-scratch">RASPA E DESCOBRE</div>
+          <div class="ticket-footer"><span>UMA SURPRESA ESPERA POR TI</span><span>✦</span></div>
+        </div>
+        <div class="floating-chip chip-one">✦</div><div class="floating-chip chip-two">✧</div><div class="floating-label">SURPREENDE-TE</div>
+      </div>
+      <div class="hero-bottom"><span>01 / 04</span><span class="hero-line"></span><span>DESCOBRE A TUA PRÓXIMA SURPRESA</span></div>
+    </section>
+
+    <section id="natal" class="christmas-section">
+      <div class="section-heading"><div><div class="eyebrow christmas-eyebrow"><span class="eyebrow-dot"></span> EDIÇÃO ESPECIAL • DEZEMBRO</div><h2>O encanto do <span>Natal</span></h2></div><p>Uma edição sazonal com brilho dourado, símbolos festivos e espírito natalício.</p></div>
+      <article class="christmas-card">
+        <div class="snow snow-a">✦</div><div class="snow snow-b">❄</div><div class="snow snow-c">✧</div>
+        <div class="christmas-copy"><span class="christmas-kicker">RASPAONLINE APRESENTA</span><h3>Magia<br><em>de Natal</em></h3><p>Uma surpresa especial espera por ti nesta época mágica.</p><div class="christmas-meta"><span class="gold-dot"></span> EDIÇÃO LIMITADA DE DEMONSTRAÇÃO</div></div>
+        <div class="christmas-visual"><div class="wreath"><span class="wreath-star">✦</span><span class="wreath-bow">✧</span><span class="wreath-berry berry-one"></span><span class="wreath-berry berry-two"></span></div><div class="gift gift-back"></div><div class="gift gift-front"><span></span></div><div class="gift-ribbon"></div><div class="sparkle sp-one">✦</div><div class="sparkle sp-two">✧</div><div class="sparkle sp-three">✦</div></div>
+        <div class="christmas-bottom"><span>UMA ÉPOCA. UMA EXPERIÊNCIA. MUITAS SURPRESAS.</span><button id="christmas-play" class="button button-gold">Descobrir edição <span>↗</span></button></div>
+      </article>
+    </section>
+
+    <section id="jogos" class="games-section">
+      <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-dot"></span> ESCOLHE A TUA EXPERIÊNCIA</div><h2>As nossas <span>raspadinhas</span></h2></div><p>Quatro experiências, diferentes símbolos e uma única regra: desfrutar da surpresa.</p></div>
+      <div id="games-grid" class="games-grid">
+        <article class="game-card game-sorte"><div class="game-art"><span class="game-art-symbol">☘</span><span class="game-orbit">✦</span></div><div class="game-info"><span class="game-tag">CLÁSSICA</span><h3>Raspadinha da Sorte</h3><p>Um clássico cheio de possibilidades.</p><div class="game-footer"><span>A partir de €1</span><button class="text-button" data-model="sorte">Ver jogo ↗</button></div></div></article>
+        <article class="game-card game-cofre"><div class="game-art"><span class="game-art-symbol">♙</span><span class="game-orbit">✧</span></div><div class="game-info"><span class="game-tag">TESOURO</span><h3>Cofre Cheio</h3><p>Abre a porta a novas surpresas.</p><div class="game-footer"><span>A partir de €1</span><button class="text-button" data-model="cofre">Ver jogo ↗</button></div></div></article>
+        <article class="game-card game-semana"><div class="game-art"><span class="game-art-symbol">✧</span><span class="game-orbit">✦</span></div><div class="game-info"><span class="game-tag">SEMANAL</span><h3>Raspadinha da Semana</h3><p>Uma nova oportunidade de diversão.</p><div class="game-footer"><span>A partir de €1</span><button class="text-button" data-model="semana">Ver jogo ↗</button></div></div></article>
+        <article class="game-card game-fortuna"><div class="game-art"><span class="game-art-symbol">♛</span><span class="game-orbit">✦</span></div><div class="game-info"><span class="game-tag">PREMIUM</span><h3>Fortuna Dourada</h3><p>Uma experiência de brilho e elegância.</p><div class="game-footer"><span>A partir de €1</span><button class="text-button" data-model="fortuna">Ver jogo ↗</button></div></div></article>
+      </div>
+      <div id="issue-panel" class="issue-panel hidden"><div class="issue-panel-head"><div><span class="eyebrow">EMISSÕES DISPONÍVEIS</span><h3 id="issue-title">Escolhe a tua raspadinha</h3></div><button id="close-issues" class="icon-button" aria-label="Fechar">×</button></div><div id="issues-list" class="issues-list"></div></div>
+    </section>
+
+    <section id="account" class="account-section hidden"><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-dot"></span> A TUA ÁREA</div><h2>A tua <span>carteira demo</span></h2></div><p>Saldo fictício, bilhetes e movimentos da tua experiência.</p></div><div class="account-grid"><div class="balance-card"><span>SALDO DISPONÍVEL</span><strong id="wallet-balance">€50,00</strong><small>Crédito exclusivamente demonstrativo</small></div><div class="history-card"><h3>Movimentos recentes</h3><div id="transactions-list" class="transactions-list"><p class="empty-state">Ainda não existem movimentos.</p></div></div></div><div class="my-tickets"><h3>Os meus bilhetes</h3><div id="tickets-list" class="tickets-list"><p class="empty-state">Ainda não compraste bilhetes.</p></div></div></section>
+
+    <section id="como-funciona" class="steps-section"><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-dot"></span> SIMPLES E INTUITIVO</div><h2>Como <span>funciona</span></h2></div></div><div class="steps-grid"><div class="step"><span>01</span><h3>Escolhe</h3><p>Seleciona a tua raspadinha favorita.</p></div><div class="step"><span>02</span><h3>Compra demo</h3><p>Usa o saldo fictício da tua carteira.</p></div><div class="step"><span>03</span><h3>Raspa</h3><p>Revela os símbolos e descobre o resultado.</p></div></div></section>
+  </main>
+  <footer><a class="brand footer-brand" href="/"><span class="brand-mark">R</span><span>raspa<span class="brand-light">online</span><small>O prazer está na surpresa</small></span></a><div><span>© 2026 RaspaOnline</span><span class="demo-disclaimer">Modo de demonstração • Sem dinheiro real • Sem levantamentos</span></div></footer>
+
+  <div id="auth-modal" class="modal hidden"><div class="modal-backdrop" data-close="auth"></div><div class="modal-card"><button class="modal-close" data-close="auth">×</button><div class="eyebrow"><span class="eyebrow-dot"></span> BEM-VINDO AO RASPAONLINE</div><h2 id="auth-title">Criar conta demo</h2><p id="auth-description">Recebe €50 de saldo fictício para explorar a experiência.</p><form id="auth-form"><label for="display-name">Como te podemos chamar?</label><input id="display-name" maxlength="40" placeholder="O teu nome" autocomplete="nickname"><button class="button button-primary button-full" type="submit">Criar a minha conta <span>↗</span></button></form><p class="modal-footnote">Esta conta é apenas para demonstração. Não envolve depósitos nem prémios resgatáveis.</p></div></div>
+  <div id="scratch-modal" class="modal hidden"><div class="modal-backdrop" data-close="scratch"></div><div class="scratch-modal-card"><button class="modal-close" data-close="scratch">×</button><div class="eyebrow"><span class="eyebrow-dot"></span> O TEU BILHETE</div><h2 id="scratch-title">A tua raspadinha</h2><div id="scratch-ticket" class="scratch-ticket"><div id="scratch-grid" class="scratch-grid"></div><div id="scratch-cover" class="scratch-cover"><span>✦</span><b>RASPA AQUI</b><small>TOCA PARA REVELAR</small></div></div><p id="scratch-result" class="scratch-result">O resultado está escondido. Toca no bilhete para revelar.</p><button id="reveal-button" class="button button-primary button-full">Raspar agora</button></div></div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
