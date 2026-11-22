@@ -188,7 +188,7 @@ async function handler(req: IncomingMessage, res: ServerResponse): Promise<void>
   }
 
 
-  const revealMatch = path.match(/^\\/api\\/demo\\/tickets\\/([^/]+)\\/reveal$/);
+  const revealMatch = path.match(/^\/api\/demo\/tickets\/([^/]+)\/reveal$/);
   if (req.method === "POST" && revealMatch) {
     const userId = await authenticatedDemoUser(req);
     if (!userId) return send(res, 401, { error: "Sessão demo inválida." });
@@ -198,7 +198,7 @@ async function handler(req: IncomingMessage, res: ServerResponse): Promise<void>
     } catch (error) { return walletError(res, error); }
   }
 
-  const ticketMatch = path.match(/^\\/api\\/demo\\/tickets\\/([^/]+)$/);
+  const ticketMatch = path.match(/^\/api\/demo\/tickets\/([^/]+)$/);
   if (req.method === "GET" && ticketMatch) {
     const userId = await authenticatedDemoUser(req);
     if (!userId) return send(res, 401, { error: "Sessão demo inválida." });
