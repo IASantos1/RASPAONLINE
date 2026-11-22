@@ -1,4 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { readFile } from "node:fs/promises";
+import { extname, resolve, sep } from "node:path";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { MODELS, PRICES_EUR, type GameModel } from "./config.js";
 import {
@@ -11,6 +13,36 @@ import { generateIssue } from "./engine/issue-generator.js";
 const PORT = Number(process.env.PORT ?? 3000);
 const DEMO_MODE = process.env.DEMO_MODE === "true";
 const ADMIN_API_KEY = process.env.ADMIN_API_KEY ?? "";
+const PUBLIC_DIR = resolve(process.cwd(), "public");
+const STATIC_TYPES: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".webp": "image/webp"
+};
+
+async function serveStatic(path: string, res: ServerResponse): Promise<boolean> {
+  const relative = path === "/" ? "index.html" : decodeURIComponent(path).replace(/^\\/+/, "");
+  const filePath = resolve(PUBLIC_DIR, relative);
+  if (!filePath.startsWith(PUBLIC_DIR + sep) && filePath !== resolve(PUBLIC_DIR, "index.html")) {
+    return false;
+  }
+  try {
+    const content = await readFile(filePath);
+    res.writeHead(200, {
+      "content-type": STATIC_TYPES[extname(filePath)] ?? "application/octet-stream",
+      "cache-control": filePath.endsWith(".html") ? "no-cache" : "public, max-age=3600",
+      "x-content-type-options": "nosniff"
+    });
+    res.end(content);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function send(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, {
@@ -84,6 +116,11 @@ function validModel(value: unknown): value is GameModel {
 async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
   const path = url.pathname;
+
+  if (req.method === "GET" && (path === "/" || path.startsWith("/assets/") || path === "/styles.css" || path === "/app.js")) {
+    if (await serveStatic(path, res)) return;
+    return send(res, 404, { error: "Ficheiro não encontrado." });
+  }
 
   if (req.method === "GET" && path === "/health") {
     await pool.query("SELECT 1");
