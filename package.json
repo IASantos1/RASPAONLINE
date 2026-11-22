@@ -1,0 +1,17 @@
+{
+  "name": "raspaonline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RaspaOnline demo scratchcard mathematics engine",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "tsx --test src/**/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}
