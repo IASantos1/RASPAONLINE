@@ -123,6 +123,185 @@ export async function revealTicket(ticketId: string) {
   });
 }
 
+
+export class DemoWalletError extends Error {
+  constructor(public readonly code: "NOT_FOUND" | "INSUFFICIENT_FUNDS" | "SOLD" | "NOT_OWNER") {
+    super(code);
+  }
+}
+
+export async function createDemoAccount(input: {
+  userId: string;
+  displayName: string;
+  tokenHash: string;
+}): Promise<void> {
+  await inTransaction(async (client) => {
+    await client.query(
+      "INSERT INTO demo_wallet_users (id, display_name, token_hash) VALUES ($1,$2,$3)",
+      [input.userId, input.displayName, input.tokenHash]
+    );
+    await client.query(
+      "INSERT INTO demo_wallets (user_id, balance_cents) VALUES ($1,5000)",
+      [input.userId]
+    );
+    await client.query(
+      `INSERT INTO demo_wallet_transactions
+       (id,user_id,type,amount_cents,balance_after_cents,description)
+       VALUES (gen_random_uuid(),$1,'demo_credit',5000,5000,'Crédito inicial fictício')`,
+      [input.userId]
+    );
+  });
+}
+
+export async function findDemoUser(tokenHash: string) {
+  const result = await pool.query(
+    "SELECT id, display_name FROM demo_wallet_users WHERE token_hash = $1",
+    [tokenHash]
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function getDemoWallet(userId: string) {
+  const [wallet, transactions] = await Promise.all([
+    pool.query(
+      "SELECT balance_cents, updated_at FROM demo_wallets WHERE user_id = $1",
+      [userId]
+    ),
+    pool.query(
+      `SELECT id, type, amount_cents, balance_after_cents, reference_id,
+              description, created_at
+       FROM demo_wallet_transactions WHERE user_id = $1
+       ORDER BY created_at DESC LIMIT 50`,
+      [userId]
+    )
+  ]);
+  if (wallet.rowCount === 0) throw new DemoWalletError("NOT_FOUND");
+  return { balanceCents: Number(wallet.rows[0].balance_cents), updatedAt: wallet.rows[0].updated_at, transactions: transactions.rows };
+}
+
+export async function purchaseDemoTicket(userId: string, issueId: string) {
+  return inTransaction(async (client) => {
+    const wallet = await client.query(
+      "SELECT balance_cents FROM demo_wallets WHERE user_id = $1 FOR UPDATE",
+      [userId]
+    );
+    if (wallet.rowCount === 0) throw new DemoWalletError("NOT_FOUND");
+
+    const ticket = await client.query(
+      `SELECT t.id, t.issue_id, t.price_cents, t.model
+       FROM scratch_tickets t
+       JOIN scratch_issues i ON i.id = t.issue_id
+       WHERE t.issue_id = $1 AND i.mode = 'DEMO'
+         AND NOT EXISTS (SELECT 1 FROM demo_ticket_sales s WHERE s.ticket_id = t.id)
+       ORDER BY t.id
+       LIMIT 1 FOR UPDATE OF t SKIP LOCKED`,
+      [issueId]
+    );
+    if (ticket.rowCount === 0) throw new DemoWalletError("SOLD");
+
+    const balance = Number(wallet.rows[0].balance_cents);
+    const price = Number(ticket.rows[0].price_cents);
+    if (balance < price) throw new DemoWalletError("INSUFFICIENT_FUNDS");
+
+    const nextBalance = balance - price;
+    await client.query(
+      "UPDATE demo_wallets SET balance_cents = $2, updated_at = NOW() WHERE user_id = $1",
+      [userId, nextBalance]
+    );
+    await client.query(
+      "INSERT INTO demo_ticket_sales (ticket_id,user_id,purchase_price_cents) VALUES ($1,$2,$3)",
+      [ticket.rows[0].id, userId, price]
+    );
+    await client.query(
+      `INSERT INTO demo_wallet_transactions
+       (id,user_id,type,amount_cents,balance_after_cents,reference_id,description)
+       VALUES (gen_random_uuid(),$1,'ticket_purchase',$2,$3,$4,$5)`,
+      [userId, -price, nextBalance, ticket.rows[0].id, `Compra demo de bilhete ${ticket.rows[0].id}`]
+    );
+    return {
+      ticketId: ticket.rows[0].id,
+      issueId: ticket.rows[0].issue_id,
+      model: ticket.rows[0].model,
+      priceCents: price,
+      balanceCents: nextBalance
+    };
+  });
+}
+
+export async function revealOwnedDemoTicket(userId: string, ticketId: string) {
+  return inTransaction(async (client) => {
+    const result = await client.query(
+      `SELECT t.id, t.issue_id, t.model, t.price_cents, t.batch_number,
+              t.grid, t.prize_multiplier, t.prize_cents, t.winning_symbol_id,
+              t.ticket_hash, t.revealed_at, s.user_id
+       FROM scratch_tickets t
+       JOIN demo_ticket_sales s ON s.ticket_id = t.id
+       WHERE t.id = $1
+       FOR UPDATE OF t`,
+      [ticketId]
+    );
+    if (result.rowCount === 0) throw new DemoWalletError("NOT_FOUND");
+    const ticket = result.rows[0];
+    if (ticket.user_id !== userId) throw new DemoWalletError("NOT_OWNER");
+
+    if (!ticket.revealed_at) {
+      await client.query(
+        "UPDATE scratch_tickets SET revealed_at = NOW() WHERE id = $1",
+        [ticketId]
+      );
+      const prize = Number(ticket.prize_cents);
+      if (prize > 0) {
+        const wallet = await client.query(
+          "SELECT balance_cents FROM demo_wallets WHERE user_id = $1 FOR UPDATE",
+          [userId]
+        );
+        const nextBalance = Number(wallet.rows[0].balance_cents) + prize;
+        await client.query(
+          "UPDATE demo_wallets SET balance_cents = $2, updated_at = NOW() WHERE user_id = $1",
+          [userId, nextBalance]
+        );
+        await client.query(
+          `INSERT INTO demo_wallet_transactions
+           (id,user_id,type,amount_cents,balance_after_cents,reference_id,description)
+           VALUES (gen_random_uuid(),$1,'prize_credit',$2,$3,$4,$5)`,
+          [userId, prize, nextBalance, ticketId, `Prémio demo do bilhete ${ticketId}`]
+        );
+      }
+      ticket.revealed_at = new Date();
+    }
+
+    const wallet = await client.query(
+      "SELECT balance_cents FROM demo_wallets WHERE user_id = $1",
+      [userId]
+    );
+    return {
+      id: ticket.id,
+      issueId: ticket.issue_id,
+      model: ticket.model,
+      priceCents: Number(ticket.price_cents),
+      grid: ticket.grid,
+      prizeMultiplier: Number(ticket.prize_multiplier),
+      prizeCents: Number(ticket.prize_cents),
+      winningSymbolId: ticket.winning_symbol_id,
+      ticketHash: ticket.ticket_hash,
+      revealedAt: ticket.revealed_at,
+      balanceCents: Number(wallet.rows[0].balance_cents)
+    };
+  });
+}
+
+export async function getOwnedDemoTicket(userId: string, ticketId: string) {
+  const result = await pool.query(
+    `SELECT t.id, t.issue_id, t.model, t.price_cents, t.batch_number,
+            (t.revealed_at IS NOT NULL) AS revealed
+     FROM scratch_tickets t
+     JOIN demo_ticket_sales s ON s.ticket_id = t.id
+     WHERE t.id = $1 AND s.user_id = $2`,
+    [ticketId, userId]
+  );
+  return result.rows[0] ?? null;
+}
+
 export async function closeDatabase(): Promise<void> {
   await pool.end();
 }
