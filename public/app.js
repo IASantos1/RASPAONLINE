@@ -79,7 +79,8 @@ async function revealCurrent(){
   try{
     const result=await api("/api/demo/tickets/"+encodeURIComponent(currentTicketId)+"/reveal",{method:"POST",body:"{}"});
     const flat=(result.grid||[]).flat();
-    $("scratch-grid").innerHTML=flat.map(cell=>'<div class="scratch-cell">'+(symbols[cell.symbolId]||"✦")+'</div>').join("");
+    $("scratch-grid").style.gridTemplateColumns="repeat("+((result.grid&&result.grid[0])?result.grid[0].length:3)+",1fr)";
+    $("scratch-grid").innerHTML=flat.map(cell=>'<div class="scratch-cell">'+(symbols[cell]||"✦")+'</div>').join("");
     $("scratch-cover").classList.add("revealed");
     $("scratch-result").textContent=result.prizeCents>0?"✨ Parabéns! Prémio demo: "+money(result.prizeCents):"Obrigado por experimentares! Este bilhete não tem prémio demo.";
     $("reveal-button").disabled=true;$("reveal-button").textContent="Bilhete revelado";
