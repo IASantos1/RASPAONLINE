@@ -28,7 +28,7 @@ npm run build
 
 ## API DEMO com PostgreSQL
 
-A API de emissões e revelação de bilhetes está documentada em [docs/API.md](docs/API.md). Configura a base de dados com [db/schema.sql](db/schema.sql) e usa `.env.example` como referência.
+A API de emissões, carteira demo, compras e revelação de bilhetes está documentada em [docs/API.md](docs/API.md). Configura a base de dados com [db/schema.sql](db/schema.sql) e usa `.env.example` como referência.
 
 ## Limites importantes
 
