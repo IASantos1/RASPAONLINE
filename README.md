@@ -35,3 +35,15 @@ A API de emissões, carteira demo, compras e revelação de bilhetes está docum
 - Os resultados e hashes devem ser persistidos no servidor numa base de dados append-only antes de disponibilizar os bilhetes.
 - Os hashes ajudam a detetar alterações, mas não substituem auditoria independente, certificação, controlo de acesso ou prova criptográfica pública de pré-compromisso.
 - Não ativar dinheiro real, depósitos, prémios resgatáveis ou venda pública sem validação jurídica e regulatória aplicável em Portugal.
+
+
+## Interface web
+
+A interface responsiva está em `public/` e é servida pelo mesmo servidor HTTP:
+
+- `/` — página inicial RaspaOnline.
+- Edição especial sazonal **Magia de Natal**, apresentada visualmente como tema da Fortuna Dourada.
+- Criação de conta demo com €50 fictícios, sessão por token, carteira, movimentos, compra e revelação de bilhetes.
+- Interface adaptada a telemóvel e computador.
+
+A edição de Natal reutiliza a tabela matemática do modelo Fortuna (RTP teórico de 40%); não altera probabilidades nem resultados. Para aparecerem bilhetes compráveis, é necessário criar previamente emissões DEMO através da API administrativa. A interface não ativa pagamentos reais nem levantamentos.
