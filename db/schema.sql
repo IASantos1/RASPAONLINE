@@ -96,3 +96,59 @@ CREATE TRIGGER trg_scratch_tickets_immutable
 BEFORE UPDATE OR DELETE ON scratch_tickets
 FOR EACH ROW EXECUTE FUNCTION raspaonline_protect_ticket_result();
 
+-- Carteiras e contas exclusivamente demonstrativas.
+CREATE TABLE IF NOT EXISTS demo_wallet_users (
+  id UUID PRIMARY KEY,
+  display_name VARCHAR(40) NOT NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS demo_wallets (
+  user_id UUID PRIMARY KEY REFERENCES demo_wallet_users(id),
+  balance_cents BIGINT NOT NULL DEFAULT 0 CHECK (balance_cents >= 0),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS demo_wallet_transactions (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES demo_wallet_users(id),
+  type TEXT NOT NULL CHECK (type IN ('demo_credit', 'ticket_purchase', 'prize_credit')),
+  amount_cents BIGINT NOT NULL CHECK (amount_cents <> 0),
+  balance_after_cents BIGINT NOT NULL CHECK (balance_after_cents >= 0),
+  reference_id TEXT,
+  description TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_demo_wallet_transactions_user_created
+  ON demo_wallet_transactions(user_id, created_at DESC);
+
+-- A venda é registada à parte para preservar a imutabilidade do resultado pré-gerado.
+CREATE TABLE IF NOT EXISTS demo_ticket_sales (
+  ticket_id TEXT PRIMARY KEY REFERENCES scratch_tickets(id),
+  user_id UUID NOT NULL REFERENCES demo_wallet_users(id),
+  purchase_price_cents BIGINT NOT NULL CHECK (purchase_price_cents > 0),
+  purchased_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_demo_ticket_sales_user
+  ON demo_ticket_sales(user_id, purchased_at DESC);
+
+CREATE OR REPLACE FUNCTION raspaonline_reject_append_only()
+RETURNS trigger AS $$
+BEGIN
+  RAISE EXCEPTION 'Registos financeiros demo são append-only.';
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_demo_wallet_transactions_append_only ON demo_wallet_transactions;
+CREATE TRIGGER trg_demo_wallet_transactions_append_only
+BEFORE UPDATE OR DELETE ON demo_wallet_transactions
+FOR EACH ROW EXECUTE FUNCTION raspaonline_reject_append_only();
+
+DROP TRIGGER IF EXISTS trg_demo_ticket_sales_append_only ON demo_ticket_sales;
+CREATE TRIGGER trg_demo_ticket_sales_append_only
+BEFORE UPDATE OR DELETE ON demo_ticket_sales
+FOR EACH ROW EXECUTE FUNCTION raspaonline_reject_append_only();
+
