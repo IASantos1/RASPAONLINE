@@ -31,7 +31,8 @@ const symbols = [
   { id: "barra-ouro", label: "Barra de ouro", emoji: "🟨" },
   { id: "chave", label: "Chave", emoji: "🗝️" },
   { id: "cofre", label: "Cofre", emoji: "🔐" },
-  { id: "saco-ouro", label: "Saco de ouro", emoji: "💰" }
+  { id: "saco-ouro", label: "Saco de ouro", emoji: "💰" },
+  { id: "perola", label: "Pérola", emoji: "🦪" }
 ] as const;
 
 export const MODELS: Record<GameModel, ModelConfig> = {
