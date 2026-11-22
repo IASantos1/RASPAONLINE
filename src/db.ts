@@ -1,5 +1,5 @@
 import { Pool, type PoolClient } from "pg";
-import type { ScratchIssue, ScratchTicket } from "./engine/issue-generator.js";
+import type { ScratchIssue } from "./engine/issue-generator.js";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -9,7 +9,9 @@ if (!connectionString) {
 export const pool = new Pool({
   connectionString,
   max: Number(process.env.PG_POOL_MAX ?? 10),
-  ssl: process.env.PGSSLMODE === "require" ? { rejectUnauthorized: true } : undefined
+  ...(process.env.PGSSLMODE === "require"
+    ? { ssl: { rejectUnauthorized: true } }
+    : {})
 });
 
 async function inTransaction<T>(work: (client: PoolClient) => Promise<T>): Promise<T> {
