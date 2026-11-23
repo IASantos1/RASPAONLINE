@@ -108,6 +108,8 @@ document.querySelectorAll("[data-filter]").forEach(button=>button.addEventListen
   document.querySelectorAll("[data-filter]").forEach(item=>item.classList.toggle("active",item===button));
   document.querySelectorAll(".game-card").forEach(card=>{card.classList.toggle("hidden",filter!=="all"&&card.dataset.category!==filter)});
 }));
+const sidebarAccount=$("sidebar-account");if(sidebarAccount)sidebarAccount.addEventListener("click",()=>{if(token){$("account").scrollIntoView({behavior:"smooth"});}else{$("register-button").click();}});
+document.querySelectorAll(".sidebar-promo [data-model]").forEach(b=>b.addEventListener("click",()=>openIssues(b.dataset.model)));
 $("christmas-play").addEventListener("click",()=>openIssues("natal"));
 $("close-issues").addEventListener("click",()=>$("issue-panel").classList.add("hidden"));
 loadIssues();loadWallet();
