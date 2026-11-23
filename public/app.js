@@ -101,7 +101,7 @@ document.querySelectorAll("[data-model]").forEach(b=>b.addEventListener("click",
 const menuToggle=$("mobile-menu-toggle"),mobileDrawer=$("mobile-drawer");
 menuToggle.addEventListener("click",()=>{const open=mobileDrawer.classList.toggle("open");menuToggle.setAttribute("aria-expanded",String(open));menuToggle.textContent=open?"×":"☰"});
 mobileDrawer.querySelectorAll("a").forEach(link=>link.addEventListener("click",()=>{mobileDrawer.classList.remove("open");menuToggle.setAttribute("aria-expanded","false");menuToggle.textContent="☰"}));
-document.querySelectorAll(".mobile-bottom-nav a").forEach(link=>link.addEventListener("click",()=>{document.querySelectorAll(".mobile-bottom-nav a").forEach(a=>a.classList.toggle("active",a===link))}));
+document.querySelectorAll(".mobile-bottom-nav a").forEach(link=>link.addEventListener("click",(event)=>{if(link.getAttribute("href")==="#account"&&!token){event.preventDefault();showModal("auth-modal");return}document.querySelectorAll(".mobile-bottom-nav a").forEach(a=>a.classList.toggle("active",a===link))}));
 document.querySelectorAll(".desktop-nav a").forEach(link=>link.addEventListener("click",()=>{document.querySelectorAll(".desktop-nav a").forEach(a=>a.classList.toggle("active",a===link))}));
 document.querySelectorAll("[data-filter]").forEach(button=>button.addEventListener("click",()=>{
   const filter=button.dataset.filter;
