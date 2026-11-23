@@ -36,3 +36,96 @@
 .issue-item{background:linear-gradient(140deg,#173323,#0d1d15);border-color:#ffffff18}
 @media(max-width:850px){.catalog-toolbar{align-items:flex-start;flex-direction:column}.catalog-filters{justify-content:flex-start}}
 @media(max-width:560px){.catalog-toolbar{padding:16px;gap:14px}.catalog-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.catalog-filter{padding:10px 7px;font-size:9px}.games-grid{gap:11px}.game-art{height:125px}.game-info{padding:14px 12px}.game-info h3{font-size:11px}.game-footer>span{font-size:9px}.text-button{font-size:9px;padding:7px 8px}}
+
+/* Layout inspirado nas referências mobile e desktop */
+:root{--bg:#050711;--panel:#0b1024;--panel2:#111832;--green:#a33cff;--mint:#e8caff;--gold:#ffd45c;--line:rgba(170,116,255,.22)}
+body{background:radial-gradient(ellipse at 50% -20%,#201044 0%,#090b1b 42%,#040611 100%);padding-bottom:0}
+.ambient-one{background:#8c24ff;opacity:.17}.ambient-two{background:#ffb52e;opacity:.09}
+.topbar{max-width:1440px;height:76px;border-bottom-color:#a33cff35;position:relative;z-index:15}
+.brand{color:#f4eaff;font-size:16px;letter-spacing:-.3px}.brand-mark{background:linear-gradient(145deg,#e4bfff,#8b22f6);color:#210d3b;box-shadow:0 0 22px #a53cff70;border-radius:50%}
+.brand-light{color:#ffd45c}.brand small{letter-spacing:3px;color:#c59be9}
+.desktop-nav{gap:clamp(16px,2.5vw,36px);font-size:12px;color:#c4b8d8}
+.desktop-nav a{padding:29px 0;position:relative}
+.desktop-nav a.active:after,.desktop-nav a:hover:after{content:'';height:2px;position:absolute;bottom:17px;left:0;right:0;background:#d89cff;box-shadow:0 0 12px #b34cff}
+.button-primary{background:linear-gradient(135deg,#c14cff,#6814c5);box-shadow:0 0 20px #9b32ff55;color:#fff}
+.button-quiet{border-color:#a65aff55;background:#100d24}
+.hero{max-width:1440px;min-height:440px;padding-top:65px}
+.hero h1 span,.section-heading h2 span{background:linear-gradient(90deg,#f5d36c,#dca5ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-ticket{background:radial-gradient(circle at 50% 38%,#7125bd,#241044 68%,#100a26);border-color:#d99bff;box-shadow:0 0 32px #a33cff55,0 30px 70px #0009,inset 0 0 35px #e6c1ff20}
+.ticket-star,.ticket-title b{color:#ffd45c}
+.ticket-scratch{background:linear-gradient(110deg,#9996a8,#f1e9ff,#8c849d)}
+.christmas-card{background:radial-gradient(ellipse at 76% 45%,#48216e 0%,#21113e 42%,#0b1025 85%);border-color:#d5a2ff65;box-shadow:0 0 35px #9b37ff20}
+.games-section{max-width:1440px}
+.games-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.game-card{background:#0c1025;border:1px solid #b34cff75;box-shadow:0 0 18px #9b36ff1a,inset 0 0 22px #8d38ff0b}
+.game-card:after{border-color:#ffffff12}
+.game-card:hover{border-color:#f0c6ff;box-shadow:0 0 26px #a33cff48,0 20px 40px #0008}
+.game-art{height:150px}
+.game-sorte .game-art{background:radial-gradient(ellipse at 50% 45%,#174d9b,#0b1b49 65%,#07112b)}
+.game-cofre .game-art{background:radial-gradient(ellipse at 50% 45%,#b329a0,#51105d 60%,#220a37)}
+.game-semana .game-art{background:radial-gradient(ellipse at 50% 45%,#b65a16,#57220b 62%,#281006)}
+.game-fortuna .game-art{background:radial-gradient(ellipse at 50% 45%,#c18c17,#68430a 62%,#291b05)}
+.game-tag{color:#e4c7ff;border-color:#c58aff55;background:#9c4cff18}
+.game-info h3{color:#fff0ff}.game-info p{color:#b4a8c9}
+.game-footer>span{color:#ffd76c}
+.text-button{background:linear-gradient(135deg,#a63bfa,#5712b6);border-color:#d49bff;color:white;box-shadow:0 0 13px #8e2aff45}
+.catalog-toolbar{background:linear-gradient(110deg,#15112c,#0c1024);border-color:#a44bff44}
+.catalog-filter.active{background:linear-gradient(135deg,#e4c1ff,#9e43e5);color:#21102f}
+.prizes-section{max-width:1184px;margin:auto;padding:55px 28px 70px}
+.prizes-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.prizes-info-grid article{padding:23px;border:1px solid #a34cff44;border-radius:13px;background:linear-gradient(145deg,#17132e,#0b1022);box-shadow:inset 0 0 22px #a33cff0a}
+.prize-icon{font-size:26px;color:#ffd45c}.prizes-info-grid h3{font:700 14px Manrope;margin:15px 0 8px}.prizes-info-grid p{font-size:11px;line-height:1.75;color:#b2a7c4;margin:0}
+.steps-section{padding-top:55px}
+.step{border-color:#8f45c9}
+.step>span{color:#d6a2ff}
+.mobile-menu-toggle,.mobile-drawer,.mobile-bottom-nav{display:none}
+.issue-panel{background:linear-gradient(145deg,#17132e,#090d1c);border-color:#a34cff66}
+.issue-item{background:linear-gradient(140deg,#21143c,#0d1428);border-color:#a34cff44}
+.account-section{border-color:#a34cff44}
+.balance-card{background:linear-gradient(135deg,#54208b,#171c3b)}
+footer{border-color:#a34cff33}
+@media(max-width:850px){
+ .topbar{height:70px;padding:0 18px}
+ .desktop-nav{display:none}
+ .mobile-menu-toggle{display:grid;place-items:center;width:38px;height:38px;border:1px solid #b65cff55;border-radius:9px;background:#130d29;color:#f3dcff;font-size:21px;cursor:pointer;order:3}
+ .header-actions{margin-left:auto;margin-right:12px}
+ .header-actions .button{font-size:9px;padding:9px 10px}
+ .mobile-drawer{position:absolute;display:none;top:69px;left:12px;right:12px;padding:10px;border:1px solid #ad5bff66;border-radius:13px;background:#0c0b20;box-shadow:0 18px 40px #000b}
+ .mobile-drawer.open{display:grid}
+ .mobile-drawer a{padding:13px 12px;border-radius:8px;color:#e9d7ff;font-size:13px}
+ .mobile-drawer a:hover{background:#281344}
+ .hero{padding-top:48px}
+ .prizes-section{padding:45px 20px 60px}
+ .mobile-bottom-nav{position:fixed;z-index:18;left:10px;right:10px;bottom:9px;display:grid;grid-template-columns:repeat(5,1fr);padding:8px 5px max(8px,env(safe-area-inset-bottom));border:1px solid #b65cff70;border-radius:15px;background:rgba(9,9,26,.94);backdrop-filter:blur(18px);box-shadow:0 0 25px #9b35ff35,0 12px 40px #0009}
+ .mobile-bottom-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#a99bbd;font-size:18px;padding:3px 0}
+ .mobile-bottom-nav a small{font-size:8px;font-weight:600}
+ .mobile-bottom-nav a.active,.mobile-bottom-nav a:hover{color:#f0caff}
+ .mobile-bottom-nav a.active span{color:#ffd45c;text-shadow:0 0 12px #ffd45c88}
+ body{padding-bottom:78px}
+ footer{padding-bottom:24px}
+}
+@media(max-width:560px){
+ .topbar{padding:0 13px}
+ .brand{font-size:13px;gap:7px}
+ .brand-mark{width:31px;height:31px}
+ .header-actions{gap:5px;margin-right:8px}
+ .header-actions .button{padding:8px;font-size:9px}
+ .hero{padding:44px 18px 55px}
+ .hero h1{font-size:39px}
+ .hero-art{height:270px}
+ .hero-ticket{transform:scale(.82) rotate(7deg)}
+ .christmas-card{background:radial-gradient(ellipse at 76% 45%,#48216e 0%,#21113e 42%,#0b1025 85%)}
+ .games-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .game-art{height:116px}
+ .game-info{padding:13px 11px}
+ .game-info h3{font-size:11px}
+ .game-info p{min-height:36px}
+ .game-footer{gap:5px;align-items:center}
+ .game-footer>span{font-size:9px}
+ .text-button{font-size:9px;padding:8px 7px}
+ .prizes-info-grid{grid-template-columns:1fr;gap:10px}
+ .prizes-info-grid article{padding:18px}
+ footer{padding-left:15px;padding-right:15px}
+ footer>div{max-width:48%}
+ .demo-disclaimer{line-height:1.4}
+}
