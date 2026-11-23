@@ -97,6 +97,11 @@ $("logout-button").addEventListener("click",()=>{localStorage.removeItem(TOKEN_K
 $("auth-form").addEventListener("submit",async e=>{e.preventDefault();const value=$("display-name").value.trim();try{if(/^[a-f0-9]{64}$/.test(value)){token=value;localStorage.setItem(TOKEN_KEY,token);await loadWallet();if(!token)throw new Error("Token inválido ou conta não encontrada.");hideModal("auth-modal");toast("Sessão iniciada.");}else{const result=await api("/api/demo/wallet/accounts",{method:"POST",body:JSON.stringify({displayName:value||"Jogador Demo"})});token=result.accessToken;localStorage.setItem(TOKEN_KEY,token);hideModal("auth-modal");await loadWallet();toast("Conta demo criada. Tens €50 fictícios.");}$("display-name").value="";}catch(err){toast(err.message)}});
 document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>hideModal(b.dataset.close==="auth"?"auth-modal":"scratch-modal")));
 document.querySelectorAll("[data-model]").forEach(b=>b.addEventListener("click",()=>openIssues(b.dataset.model)));
+document.querySelectorAll("[data-filter]").forEach(button=>button.addEventListener("click",()=>{
+  const filter=button.dataset.filter;
+  document.querySelectorAll("[data-filter]").forEach(item=>item.classList.toggle("active",item===button));
+  document.querySelectorAll(".game-card").forEach(card=>{card.classList.toggle("hidden",filter!=="all"&&card.dataset.category!==filter)});
+}));
 $("christmas-play").addEventListener("click",()=>openIssues("natal"));
 $("close-issues").addEventListener("click",()=>$("issue-panel").classList.add("hidden"));
 loadIssues();loadWallet();
