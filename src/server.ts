@@ -1,4 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { readFile } from "node:fs/promises";
+import { extname, resolve, sep } from "node:path";
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { MODELS, PRICES_EUR, type GameModel } from "./config.js";
 import {
@@ -87,6 +89,30 @@ async function handler(req: IncomingMessage, res: ServerResponse): Promise<void>
   if (req.method === "GET" && path === "/health") {
     await pool.query("SELECT 1");
     return send(res, 200, { ok: true, mode: "DEMO", database: "connected" });
+  }
+
+  if (req.method === "GET" && (path === "/" || path === "/index.html" || path === "/styles.css" || path === "/app.js")) {
+    const relativePath = path === "/" ? "index.html" : path.slice(1);
+    const publicRoot = resolve(process.cwd(), "public");
+    const filePath = resolve(publicRoot, relativePath);
+    if (!filePath.startsWith(publicRoot + sep)) {
+      return send(res, 403, { error: "Acesso negado." });
+    }
+    try {
+      const content = await readFile(filePath);
+      const contentType = extname(filePath) === ".html" ? "text/html; charset=utf-8"
+        : extname(filePath) === ".css" ? "text/css; charset=utf-8"
+        : "text/javascript; charset=utf-8";
+      res.writeHead(200, {
+        "content-type": contentType,
+        "cache-control": "no-cache",
+        "x-content-type-options": "nosniff"
+      });
+      res.end(content);
+      return;
+    } catch {
+      return send(res, 404, { error: "Ficheiro não encontrado." });
+    }
   }
 
   if (!DEMO_MODE) {
